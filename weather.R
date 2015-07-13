@@ -9,7 +9,7 @@ weather_forecast <- function(the_date, location, ny=20, level = 0.75,
         library(caret)
         library(rattle)
         
-        source("Desktop/weather_helper.R")
+        source("weather_helper.R")
         
         # If no prepared locations file exists, make it.
         if (!file.exists("airports.csv")){
@@ -18,7 +18,6 @@ weather_forecast <- function(the_date, location, ny=20, level = 0.75,
                 airports <- read.csv("airports.csv")
         } ## !file.exists("airports.csv")
         
-        # These would be supplied by the user, but for now will be defined.
         # For testing purposes, i will be using the day i remember well -
         # my birthday, which i spent in Tucson, AZ
         
@@ -60,7 +59,7 @@ weather_forecast <- function(the_date, location, ny=20, level = 0.75,
         if(make_temp_graph==TRUE){
                 plot_temp <- ggplot(weather_data
                                     ,environment = environment()
-                                    ) + 
+                ) + 
                         geom_point(aes(Date, Max_TemperatureF), color="red") +
                         geom_point(aes(newdate$Date,PredMaxT[1]), color="red",shape=5) +
                         geom_point(aes(newdate$Date,PredMaxT[2]), color="red",shape="_",size=3) +
@@ -81,7 +80,8 @@ weather_forecast <- function(the_date, location, ny=20, level = 0.75,
                                       hjust=0, vjust=0))+
                         ylab("Temperature, F") +
                         xlab("Date") +
-                        ggtitle(paste("Historical temperature trends for",the_date))
+                        ggtitle(paste("Historical temperature trends for",location,
+                                      "on",the_date))
         } #if(make_graphs)
         
         
@@ -117,53 +117,38 @@ weather_forecast <- function(the_date, location, ny=20, level = 0.75,
                 #     Dry  Rain TStorm
                 # 1 0.516 0.346  0.138
                 # Actual: Dry (there was a 20% chance of rain)
-                
-                # Sample tree plot
-                # this algorithm will not be used in an app, but i will generate a forest
-                # using 'party' package and plot a sample tree. The problem is that 
-                # cforest function looks the objects up in the global environment 
-                # instead of the function environment. Since this tree is used for 
-                # demonstration purpose only, it does not worth solving that issue.
-                # Run the code below only if you are running the function directly.
-                if(0){
-                library(party)
-                cf <- cforest(weather_data$Events ~ ., data=raw, controls=cforest_control(mtry=2, mincriterion=0))
-                pt <- party:::prettytree(cf@ensemble[[1]], names(cf@data@get("input"))) 
-                nt <- new("BinaryTree") 
-                nt@tree <- pt 
-                nt@data <- cf@data 
-                nt@responses <- cf@responses 
-                plot(nt)}#if(0)
-        } #if(predict_rain)
         
-        if(predict_temp & predict_rain & make_temp_graph){
-                return(list("MaxT" = PredMaxT,
-                            "MinT" = PredMinT,
-                            "TempPlot" = plot_temp,
-                            "Precipitation" = precip))
-        }
+        data_percent <- nrow(weather_data)/(ny*7)
         
-        if(predict_temp & predict_rain & !make_temp_graph){
-                return(list("MaxT" = PredMaxT,
-                            "MinT" = PredMinT,
-                            "Precipitation" = precip))
-        }
-        
-        if(!predict_temp & predict_rain & make_temp_graph){
-                return(list("TempPlot" = plot_temp,
-                            "Precipitation" = precip))
+        if(predict_temp) {
+                if(predict_rain){  
+                        if(make_temp_graph){
+                                return(list("Quality"=data_percent,
+                                            "MaxT" = PredMaxT,
+                                            "MinT" = PredMinT,
+                                            "TempPlot" = plot_temp,
+                                            "Precipitation" = precip))
+                        }else{
+                                return(list("Quality"=data_percent,
+                                            "MaxT" = PredMaxT,
+                                            "MinT" = PredMinT,
+                                            "Precipitation" = precip))
+                        }
+                }else{
+                        if(make_temp_graph){
+                                return(list("Quality"=data_percent,
+                                            "MaxT" = PredMaxT,
+                                            "MinT" = PredMinT,
+                                            "TempPlot" = plot_temp))
+                        }else{
+                                return(list("Quality"=data_percent,
+                                            "MaxT" = PredMaxT,
+                                            "MinT" = PredMinT))
+                        }
+                }
+        }else{
+                return(list("Quality"=data_percent))
         }
         
-        if(predict_temp & !predict_rain & make_temp_graph){
-                return(list("MaxT" = PredMaxT,
-                            "MinT" = PredMinT,
-                            "TempPlot" = plot_temp))
-        }
         
-        if(!predict_temp & !predict_rain & make_temp_graph){
-                return(list("TempPlot" = plot_temp))
-        }
-        if(!predict_temp & predict_rain & !make_temp_graph){
-                return(list("Precipitation" = precip))
-        }
 }

@@ -22,9 +22,9 @@ download_airports <- function(){
         } ## for
         airports <- airports[!(airports$id %in% bad_id),]
         airports[["iso_country"]] <- country_code[ match(airports[['iso_country']], 
-                                                country_code[['Code']] ) , 'Name']
+                                                         country_code[['Code']] ) , 'Name']
         airports[["iso_region"]] <- region_code[ match(airports[['iso_region']], 
-                                                         region_code[['code']] ) , 'subdivision_name']
+                                                       region_code[['code']] ) , 'subdivision_name']
         
         # Write file for latter use
         write.csv(airports,"airports.csv")
@@ -38,7 +38,9 @@ get_weather <- function(the_date,ny=20,location){
         for (i in ny:2){
                 weather <- getWeatherForDate(location, start_date=dates[i]-3,
                                              end_date=dates[i]+3,opt_all_columns = T)
-                weather_data <- rbind(weather_data,weather)
+                
+                weather_data <- rbind.match.columns(weather_data,weather)
+                Sys.sleep(0.5)
         }
         weather_data$Date <- as.Date(weather_data$Date)
         return(weather_data)
@@ -49,3 +51,25 @@ predict_weather <- function(Feature,Date,newdata,level=0.75){
         PredF <- predict(lm.F,newdata = newdata, interval="predict",level = level)
         return(PredF)
 }
+
+rbind.match.columns <- function(input1, input2) {
+        if(is.data.frame(input1)){
+                if(is.data.frame(input2)){
+                        n.input1 <- ncol(input1)
+                        n.input2 <- ncol(input2)
+                        if (n.input2 < n.input1) {
+                                TF.names <- which(names(input2) %in% names(input1))
+                                column.names <- names(input2[, TF.names])
+                        } else {
+                                TF.names <- which(names(input1) %in% names(input2))
+                                column.names <- names(input1[, TF.names])
+                        }
+                        return(rbind(input1[, column.names], input2[, column.names]))
+                }else{
+                        return(input1)
+                }
+        }else{
+                return(input2)
+        }
+}
+
