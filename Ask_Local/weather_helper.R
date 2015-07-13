@@ -40,6 +40,7 @@ get_weather <- function(the_date,ny=20,location){
                                              end_date=dates[i]+3,opt_all_columns = T)
                 weather_data <- rbind.match.columns(weather_data,weather)
                 Sys.sleep(0.5)
+                incProgress(1/ny, detail = paste("Downloading data... ", i))
         }
         weather_data$Date <- as.Date(weather_data$Date)
         return(weather_data)
