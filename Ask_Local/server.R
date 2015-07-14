@@ -57,12 +57,14 @@ shinyServer(function(input, output, session) {
         reac_prediction <- eventReactive(input$update, {
                 location = airports_region()$ident[airports_region()$municipality == input$municipality]
                 weather_forecast(input$date, location, ny=20, level = 0.75,
-                                 predict_temp=TRUE, predict_rain=FALSE, 
+                                 predict_temp=TRUE, predict_rain=TRUE, 
                                  make_temp_graph=TRUE)
         })
         
         output$plot <- renderPlot({
                 withProgress(message = 'Making plot', value = 0,reac_prediction()$TempPlot)
         })
+        
+        output$text1 <- renderText(names(sort(reac_prediction()$Precipitation,decreasing = T))[1])
         
 })

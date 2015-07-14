@@ -13,7 +13,8 @@ shinyUI(pageWithSidebar(
         ), #sidebarPanel
         
         mainPanel(
-                plotOutput("plot")
+                plotOutput("plot"),
+                textOutput("text1")
         ) #mainPanel
 )#pageWithSidebar
 )#shinyUI

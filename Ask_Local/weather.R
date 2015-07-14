@@ -12,21 +12,21 @@ weather_forecast <- function(the_date, location, ny=20, level = 0.75,
         source("weather_helper.R")
         
         # If no prepared locations file exists, make it.
-        if (!file.exists("airports.csv")){
-                airports <- download_airports()
-        } else {
-                airports <- read.csv("airports.csv")
-        } ## !file.exists("airports.csv")
+        #if (!file.exists("airports.csv")){
+        #        airports <- download_airports()
+        #} else {
+        #        airports <- read.csv("airports.csv")
+        #} ## !file.exists("airports.csv")
         
         # For testing purposes, i will be using the day i remember well -
         # my birthday, which i spent in Tucson, AZ
         
         # # date of interest
-        # the_date <- "2015-07-11"
+        # the_date <- "2015-07-13"
         # # number of years to consider
         # ny = 20
         # # select location
-        # location <- "KTUS"
+        # location <- "SAEZ"
         # # confidence level
         # level = 0.75
         
@@ -41,6 +41,7 @@ weather_forecast <- function(the_date, location, ny=20, level = 0.75,
                                        grepl("rain",tolower(weather_data$Events)), "Rain")
         weather_data$Events <- replace(weather_data$Events, 
                                        grepl("thunder",tolower(weather_data$Events)), "TStorm")
+        weather_data$Events <- gsub("-",".",weather_data$Events)
         weather_data$Events <- as.factor(replace(weather_data$Events, 
                                                  weather_data$Events=="", "Dry"))
         
@@ -89,7 +90,7 @@ weather_forecast <- function(the_date, location, ny=20, level = 0.75,
         if(predict_rain){
                 # 'raw' data will be used for model training
                 raw <- weather_data[,sapply(weather_data, is.numeric)]
-                raw <- raw[ , colSums(is.na(raw)) == 0]
+                raw <- droplevels(raw[ , colSums(is.na(raw)) == 0])
                 frmla = weather_data$Events ~ .
                 
                 # use random forest for prediction
