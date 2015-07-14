@@ -39,11 +39,11 @@ weather_forecast <- function(the_date, location, ny=20, level = 0.75,
         if(!is.data.frame(weather_data)) {return("Error!")}
         weather_data$Events <- replace(weather_data$Events, 
                                        grepl("rain",tolower(weather_data$Events)), "Rain")
-        weather_data$Events <- replace(weather_data$Events, 
-                                       grepl("thunder",tolower(weather_data$Events)), "TStorm")
+        # weather_data$Events <- replace(weather_data$Events, 
+        #                               grepl("thunder",tolower(weather_data$Events)), "TStorm")
         weather_data$Events <- gsub("-",".",weather_data$Events)
         weather_data$Events <- as.factor(replace(weather_data$Events, 
-                                                 weather_data$Events=="", "Dry"))
+                                                 weather_data$Events=="", "None"))
         
         ############ Maximum / Minimum temperature prediction #################
         # we will use linear regression to predict
@@ -88,6 +88,7 @@ weather_forecast <- function(the_date, location, ny=20, level = 0.75,
         
         ############ Precipitation prediction algorithm #################
         if(predict_rain){
+                incProgress(detail = paste("Predicting precipitation... "))
                 # 'raw' data will be used for model training
                 raw <- weather_data[,sapply(weather_data, is.numeric)]
                 raw <- droplevels(raw[ , colSums(is.na(raw)) == 0])
@@ -113,11 +114,11 @@ weather_forecast <- function(the_date, location, ny=20, level = 0.75,
                 colnames(predict_raw) <- names(raw)
                 precip <- predict(modFit,predict_raw,"prob")
         }
-                # make a prediction for Tuscon, 7/11/15 :
-                # > predict(modFit,predict_raw,"prob")
-                #     Dry  Rain TStorm
-                # 1 0.516 0.346  0.138
-                # Actual: Dry (there was a 20% chance of rain)
+        # make a prediction for Tuscon, 7/11/15 :
+        # > predict(modFit,predict_raw,"prob")
+        #     Dry  Rain TStorm
+        # 1 0.516 0.346  0.138
+        # Actual: Dry (there was a 20% chance of rain)
         
         data_percent <- nrow(weather_data)/(ny*7)
         

@@ -25,6 +25,7 @@ shinyServer(function(input, output, session) {
         airports$municipality <- as.character(airports$municipality)
         airports$iso_region[is.na(airports$iso_region)] <- airports$iso_country[is.na(airports$iso_region)]
         
+        output$text2 <- renderText(input$choices)
         
         output$select_country <- renderUI({
                 selectInput('country', 'Select country', 
@@ -54,17 +55,41 @@ shinyServer(function(input, output, session) {
                             selectize=TRUE)
         })
         
-        reac_prediction <- eventReactive(input$update, {
+        observeEvent(input$update, {
+                if(input$municipality %in% airports_region()$municipality ){
                 location = airports_region()$ident[airports_region()$municipality == input$municipality]
-                weather_forecast(input$date, location, ny=20, level = 0.75,
-                                 predict_temp=TRUE, predict_rain=TRUE, 
-                                 make_temp_graph=TRUE)
+                withProgress(message = 'Generating data', detail = "part 0", value = 0, {
+                        if("T" %in% input$choices){predict_temp=TRUE}else{predict_temp=FALSE}
+                        if("H" %in% input$choices){make_temp_graph=TRUE}else{make_temp_graph=FALSE}
+                        if("P" %in% input$choices){predict_rain=TRUE}else{predict_rain=FALSE}
+                        if(predict_temp | make_temp_graph | predict_rain){
+                                prediction <- weather_forecast(input$date, location, ny=input$num_years, 
+                                                               level = 0.75,
+                                                               predict_temp=predict_temp, 
+                                                               predict_rain=predict_rain, 
+                                                               make_temp_graph=make_temp_graph)
+                                if(predict_temp){
+                                        output$temp <- renderText(paste0("Max T=",round(prediction$MaxT[1],0),
+                                                                        "F, Min T=",round(prediction$MinT[1],0),"F"))
+                                }
+                                if(make_temp_graph){
+                                        output$plot <- renderPlot({
+                                                withProgress(message = 'Making plot', value = 0,prediction$TempPlot)
+                                        })
+                                        }
+                                if(predict_rain){
+                                        output$rain <- renderText(paste0("Will there be any precipitation? ",
+                                                                        names(sort(prediction$Precipitation,decreasing = T))[1],
+                                                                        " with ",max(prediction$Precipitation)*100,"% probability"))
+                                }                
+                        }else{
+                                output$temp <- renderText(paste0("Please, select a forecast aspect"))
+                        }
+                })
+                }else{
+                        output$temp <- renderText(paste0("Please, select a location"))
+                }
         })
         
-        output$plot <- renderPlot({
-                withProgress(message = 'Making plot', value = 0,reac_prediction()$TempPlot)
-        })
-        
-        output$text1 <- renderText(names(sort(reac_prediction()$Precipitation,decreasing = T))[1])
         
 })
