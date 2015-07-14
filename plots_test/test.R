@@ -1,4 +1,5 @@
 source("weather.R")
+set.seed(123)
 
 diff_df <- as.data.frame(airports[,c("ident")])
 diff_df[,c("max_T","min_T","diff_max_T","diff_min_T",
@@ -47,6 +48,8 @@ for (i in sample(1:nrow(diff_df),sample_size-sum(!is.na(diff_df$max_T)))){
 
 diff_df$Event_Prob <- sapply(diff_df$Event_Prob,FUN = paste,collapse = "-")
 write.csv(diff_df,"diff_df.csv")
+title = paste("Prediction deviations from actual 
+              temperatures for various locations (",date,")")
 
 library(reshape2)
 plot_df <- diff_df[,c(4,5,9)]
@@ -59,3 +62,20 @@ boxplot(value ~ variable*Quality,data = melt(plot_df, id.var="Quality"),
 title(title)
 dev.off()
 
+############## test2 
+
+source("weather.R")
+weather_data <- get_weather(the_date="2015-07-11",ny=20,location="KTUS")
+weather_data$Events <- replace(weather_data$Events, 
+                               grepl("rain",tolower(weather_data$Events)), "Rain")
+weather_data$Events <- as.factor(replace(weather_data$Events, 
+                                         weather_data$Events=="", "Dry"))
+raw <- weather_data[,sapply(weather_data, is.numeric)]
+colors <- c("blue","gold","green")[unclass(weather_data$Events)]
+png("pairs.png",width=1600,height=1200,res = 150)
+pairs.panels(raw[,c(1,3,4,12,14,15,16,19,20),],bg=colors, 
+             pch = 21, density=TRUE,ellipses=FALSE,rug=T,
+             main="Correlations and clustering for various weather events
+             in Tucson, AZ on 2015-07-11")
+dev.off()
+table(data.frame(colors,weather_data$Events))

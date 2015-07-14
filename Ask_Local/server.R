@@ -9,7 +9,7 @@ shinyServer(function(input, output, session) {
         library(rpart.plot)
         library(caret)
         library(rattle)
-        
+
         source("weather_helper.R")
         source("weather.R")
         
@@ -58,7 +58,7 @@ shinyServer(function(input, output, session) {
         observeEvent(input$update, {
                 if(input$municipality %in% airports_region()$municipality ){
                 location = airports_region()$ident[airports_region()$municipality == input$municipality]
-                withProgress(message = 'Generating data', detail = "part 0", value = 0, {
+                withProgress(message = 'Generating data', detail = "initializing", value = 0, {
                         if("T" %in% input$choices){predict_temp=TRUE}else{predict_temp=FALSE}
                         if("H" %in% input$choices){make_temp_graph=TRUE}else{make_temp_graph=FALSE}
                         if("P" %in% input$choices){predict_rain=TRUE}else{predict_rain=FALSE}
@@ -69,8 +69,8 @@ shinyServer(function(input, output, session) {
                                                                predict_rain=predict_rain, 
                                                                make_temp_graph=make_temp_graph)
                                 if(predict_temp){
-                                        output$temp <- renderText(paste0("Max T=",round(prediction$MaxT[1],0),
-                                                                        "F, Min T=",round(prediction$MinT[1],0),"F"))
+                                        output$temp <- renderText(paste0(" Max T = ",round(prediction$MaxT[1],0),
+                                                                        "F,        Min T=",round(prediction$MinT[1],0),"F"))
                                 }
                                 if(make_temp_graph){
                                         output$plot <- renderPlot({
@@ -81,7 +81,14 @@ shinyServer(function(input, output, session) {
                                         output$rain <- renderText(paste0("Will there be any precipitation? ",
                                                                         names(sort(prediction$Precipitation,decreasing = T))[1],
                                                                         " with ",max(prediction$Precipitation)*100,"% probability"))
-                                }                
+                                }
+                                qlty <-  prediction$Quality
+                                dqlty <- ifelse(qlty < 0.25,"bad",
+                                                ifelse(qlty < 0.5,"acceptable",
+                                                       ifelse(qlty < 0.75,"OK","good")))
+                                
+                                output$qual <- renderText(paste0("Data quality is ",dqlty,
+                                                                 " (",qlty*100,"%)"))
                         }else{
                                 output$temp <- renderText(paste0("Please, select a forecast aspect"))
                         }

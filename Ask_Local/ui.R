@@ -25,6 +25,7 @@ shinyUI(pageWithSidebar(
         mainPanel(
                 textOutput("temp"),
                 textOutput("rain"),
+                textOutput("qual"),
                 plotOutput("plot")
         ) #mainPanel
 )#pageWithSidebar
