@@ -95,9 +95,11 @@ weather_forecast <- function(the_date, location, ny=20, level = 0.75,
                 frmla = weather_data$Events ~ .
                 
                 # use random forest for prediction
-                modFit <- train(frmla, data = raw, method="rf",trControl=trainControl(
-                        method='cv',number=10,
-                        classProbs = TRUE))
+                incProgress(detail = paste("Training model... "))
+                Sys.sleep(0.5)
+                modFit <- train(frmla, data = raw, method="rf"
+                                ,trControl=trainControl(method='cv',number=10,classProbs = TRUE)
+                                )
                 # model test looks pleasant (for Tuscon, 7/11/15):
                 # > table(predict(modFit,raw),weather_data$Events)
                 #         Dry Rain TStorm
@@ -112,6 +114,8 @@ weather_forecast <- function(the_date, location, ny=20, level = 0.75,
                         predict_raw <- cbind(prediction[1],predict_raw)
                 }
                 colnames(predict_raw) <- names(raw)
+                incProgress(detail = paste("Making Prediction... "))
+                Sys.sleep(0.5)
                 precip <- predict(modFit,predict_raw,"prob")
         }
         # make a prediction for Tuscon, 7/11/15 :
@@ -136,6 +140,7 @@ weather_forecast <- function(the_date, location, ny=20, level = 0.75,
                                             "MaxT" = PredMaxT,
                                             "MinT" = PredMinT,
                                             "Precipitation" = precip,
+                                            "Data"=weather_data
                                             ))
                         }
                 }else{
