@@ -14,8 +14,9 @@ shinyUI(pageWithSidebar(
                 checkboxGroupInput('choices', 'What should I do?',
                                    choices=c("Predict temperature"="T",
                                              "Show Historical Trend"="H",
-                                             "Predict Precipitation"="P"),
-                                   selected="T"),
+                                             "Predict Precipitation"="P",
+                                             "Show pairs plot"="S"),
+                                   selected=c("T","H","S")),
                 numericInput("num_years", 
                              label = h5("How many years to use?"), 
                              value = 10, min=2, max=50),
@@ -26,7 +27,10 @@ shinyUI(pageWithSidebar(
                 textOutput("temp"),
                 textOutput("rain"),
                 textOutput("qual"),
-                plotOutput("plot")
+                plotOutput("plot"),
+                uiOutput("pairs_button"),
+                plotOutput("pairs"),
+                tableOutput("table_c")
         ) #mainPanel
 )#pageWithSidebar
 )#shinyUI

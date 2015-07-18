@@ -63,7 +63,7 @@ title(title)
 dev.off()
 
 ############## test2 
-
+library(psych)
 source("weather.R")
 weather_data <- get_weather(the_date="2015-07-11",ny=20,location="KTUS")
 weather_data$Events <- replace(weather_data$Events, 

@@ -1,6 +1,3 @@
-palette(c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3",
-          "#FF7F00", "#FFFF33", "#A65628", "#F781BF", "#999999"))
-
 shinyServer(function(input, output, session) {
         
         library(ggplot2)
@@ -9,6 +6,7 @@ shinyServer(function(input, output, session) {
         library(rpart.plot)
         library(caret)
         library(rattle)
+        
 
         source("weather_helper.R")
         source("weather.R")
@@ -62,6 +60,7 @@ shinyServer(function(input, output, session) {
                         if("T" %in% input$choices){predict_temp=TRUE}else{predict_temp=FALSE}
                         if("H" %in% input$choices){make_temp_graph=TRUE}else{make_temp_graph=FALSE}
                         if("P" %in% input$choices){predict_rain=TRUE}else{predict_rain=FALSE}
+                        if("S" %in% input$choices){show_pairs=TRUE}else{show_pairs=FALSE}
                         if(predict_temp | make_temp_graph | predict_rain){
                                 prediction <- weather_forecast(input$date, location, ny=input$num_years, 
                                                                level = 0.75,
@@ -81,6 +80,31 @@ shinyServer(function(input, output, session) {
                                         output$rain <- renderText(paste0("Will there be any precipitation? ",
                                                                         names(sort(prediction$Precipitation,decreasing = T))[1],
                                                                         " with ",max(prediction$Precipitation)*100,"% probability"))
+                                }
+                                if(show_pairs){
+                                        output$pairs_button <- renderUI({
+                                                actionButton("gen_pairs", "Show/Update pairs")
+                                        })
+                                }
+                                if(show_pairs){
+                                        observeEvent(input$gen_pairs,{
+                                                library(psych)
+                                                weather_data<-prediction$Data
+                                                colors <- c("blue","gold","green",
+                                                            "red","purple","yellow")[unclass(weather_data$Events)]
+                                                output$pairs <- renderPlot({
+                                                        withProgress(message = 'Making plot', value = 0,{
+                                                                raw <- weather_data[,sapply(weather_data, is.numeric)]
+                                                                pairs.panels(raw[,sample(3:ncol(raw),5),],bg=colors, 
+                                                                             pch = 21, density=TRUE,ellipses=FALSE,rug=T,
+                                                                             main=paste("Correlations and clustering for various weather events in",
+                                                                                        input$municipality,"on",input$date))
+                                                        })
+                                                })
+                                                output$table_c <- renderTable(table(data.frame(colors,weather_data$Events)))
+                                        })
+                                        
+                                        
                                 }
                                 qlty <-  prediction$Quality
                                 dqlty <- ifelse(qlty < 0.25,"bad",

@@ -1,8 +1,8 @@
 name: Ask_Local
 account: kirnosov
 server: shinyapps.io
-bundleId: 218851
+bundleId: 221825
 url: https://kirnosov.shinyapps.io/Ask_Local
-when: 1436774216.96994
+when: 1437198406.57496
 asMultiple: FALSE
 asStatic: FALSE

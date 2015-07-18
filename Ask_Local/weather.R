@@ -129,23 +129,27 @@ weather_forecast <- function(the_date, location, ny=20, level = 0.75,
                                             "MaxT" = PredMaxT,
                                             "MinT" = PredMinT,
                                             "TempPlot" = plot_temp,
-                                            "Precipitation" = precip))
+                                            "Precipitation" = precip,
+                                            "Data"=weather_data))
                         }else{
                                 return(list("Quality"=data_percent,
                                             "MaxT" = PredMaxT,
                                             "MinT" = PredMinT,
-                                            "Precipitation" = precip))
+                                            "Precipitation" = precip,
+                                            ))
                         }
                 }else{
                         if(make_temp_graph){
                                 return(list("Quality"=data_percent,
                                             "MaxT" = PredMaxT,
                                             "MinT" = PredMinT,
-                                            "TempPlot" = plot_temp))
+                                            "TempPlot" = plot_temp,
+                                            "Data"=weather_data))
                         }else{
                                 return(list("Quality"=data_percent,
                                             "MaxT" = PredMaxT,
-                                            "MinT" = PredMinT))
+                                            "MinT" = PredMinT,
+                                            "Data"=weather_data))
                         }
                 }
         }else{
