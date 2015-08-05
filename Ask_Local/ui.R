@@ -19,7 +19,7 @@ shinyUI(pageWithSidebar(
                                    selected=c("T","H","S")),
                 numericInput("num_years", 
                              label = h5("How many years to use?"), 
-                             value = 10, min=2, max=50),
+                             value = 20, min=2, max=50),
                 actionButton("update", "Forecast")
         ), #sidebarPanel
         
